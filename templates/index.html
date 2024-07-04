@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIT Warangal CGPA Counter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function addSemesters() {
+            const numSemesters = document.getElementById('num_semesters').value;
+            const semestersDiv = document.getElementById('semesters');
+            semestersDiv.innerHTML = '';
+
+            for (let sem = 0; sem < numSemesters; ++sem) {
+                const semDiv = document.createElement('div');
+                semDiv.innerHTML = `
+                    <h3>Semester ${sem + 1}:</h3>
+                    <label for="num_courses_${sem}">Number of courses:</label>
+                    <input type="number" name="num_courses_${sem}" id="num_courses_${sem}" required min="1">
+                    <div id="courses_${sem}"></div>
+                    <button type="button" onclick="addCoursesDetails(${sem})">Add Course Details</button>
+                `;
+                semestersDiv.appendChild(semDiv);
+            }
+        }
+
+        function addCoursesDetails(sem) {
+            const numCourses = document.getElementById(`num_courses_${sem}`).value;
+            const coursesDiv = document.getElementById(`courses_${sem}`);
+            coursesDiv.innerHTML = '';
+
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <tr>
+                    <th>Course</th>
+                    <th>Grade (S/A/B/C/D/E/P/F)</th>
+                    <th>Credits (0/1/2/3/4/5)</th>
+                </tr>
+            `;
+            
+            for (let i = 0; i < numCourses; ++i) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>Course ${i + 1}:</td>
+                    <td><input type="text" name="grade_${sem}_${i}" id="grade_${sem}_${i}" required pattern="[SABCDPEF]"></td>
+                    <td><input type="number" name="credits_${sem}_${i}" id="credits_${sem}_${i}" required min="0" max="5"></td>
+                `;
+                table.appendChild(row);
+            }
+            coursesDiv.appendChild(table);
+        }
+    </script>
+</head>
+<body>
+    <center><h1>NIT Warangal CGPA Counter</h1>
+    <p>Calculate your CGPA by entering your grades and credits for each course in each semester.</p></center>
+    <form method="POST" action="/" onsubmit="return validateForm()">
+        <label for="num_semesters">Number of semesters:</label>
+        <input type="number" id="num_semesters" name="num_semesters" required min="1">
+        <button type="button" onclick="addSemesters()">Add Semesters</button>
+
+        <div id="semesters"></div>
+        <button type="submit">Calculate CGPA</button>
+    </form>
+
+    {% if cgpa %}
+    <center><h2>Your CGPA is: {{ cgpa }}</h2></center>
+    <h3>Individual SGPAs:</h3>
+    <ul>
+        {% for i in range(sgpas|length) %}
+            <li>Semester {{ i + 1 }} SGPA: {{ sgpas[i] }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
